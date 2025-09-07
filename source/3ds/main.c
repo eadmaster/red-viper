@@ -107,8 +107,16 @@ int main(void) {
 
         hidScanInput();
         int keys = hidKeysDown();
-
-        if ((keys & KEY_TOUCH) && guiShouldPause()) {
+        
+        // quicksave/load hotkeys
+        if (keys & KEY_ZL ) emulation_sstate(0);
+        if (keys & KEY_ZR ) emulation_lstate(0);
+        
+        //fastforward hotkey
+        //if (keys & KEY_R ) tVBOpt.FASTFORWARD = true;)
+        
+        // open main menu triggers
+        if ((keys & KEY_L) || ((keys & KEY_TOUCH) && guiShouldPause())) {
             save_sram();
             guiop = 0;
             openMenu();
@@ -217,7 +225,7 @@ int main(void) {
 
         // if hold, turn off fast forward, as it'll be turned back on while reading input
         if (!tVBOpt.FF_TOGGLE) tVBOpt.FASTFORWARD = false;
-
+        
         // read inputs once per frame
         HWORD inputs = V810_RControll(false);
         tHReg.SLB =(BYTE)(inputs&0xFF);
@@ -242,6 +250,8 @@ int main(void) {
 
         osTickCounterUpdate(&frameTickCounter);
 
+        if (hidKeysDown() & KEY_R) tVBOpt.FASTFORWARD = !tVBOpt.FASTFORWARD;
+        
         if (!tVBOpt.FASTFORWARD) {
             just_lagged = lag_frames > 0;
             if (!just_lagged) {
